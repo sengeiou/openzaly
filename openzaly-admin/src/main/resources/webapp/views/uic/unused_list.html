@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>未使用列表</title>
+    </title>
+    <!-- 引入 WeUI -->
+    <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/1.1.2/weui.min.css"/>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.0/css/jquery-weui.css"/>
+    <style>
+        body, html {
+            height: 100%;
+            background-color: #f4f4f4;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .basic-color {
+            background-color: #1E88E5;
+            color: #FFFFFF;
+        }
+
+        .basic-weui-btn {
+            background-color: #1E88E5;
+            color: #FFFFFF;
+        }
+
+        .basic-weui-btn:hover {
+            background-color: #1E88E5;
+            color: #FFFFFF;
+        }
+
+        .basic-weui-btn:active {
+            background-color: #1E88E5 !important;
+            color: #FFFFFF;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        .weui-loadmore_line .weui-loadmore__tips {
+            background-color: #f4f4f4;
+        }
+
+        footer a {
+            color: #999;
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+<body ontouchstart="">
+<div class="weui-cells__title weui-cell" style="margin: auto;">
+    <div class="weui-cell__hd"><img src=""></div>
+    <div class="weui-cell__bd">
+        <p>未使用列表</p>
+    </div>
+    <div class="weui-cell__ft">
+        <a href="javascript:;" class="weui-btn basic-weui-btn generate-code  weui-btn_mini  basic-color"
+           url-data="/uic/addUic" style="text-align: left;">生成新的邀请码</a>
+    </div>
+</div>
+<div class="weui-cells" id="invitecode-lists">
+
+</div>
+<div class="weui-loadmore weui-loadmore_line loadmore_site_invitecode">
+    <span class="weui-loadmore__tips"></span>
+</div>
+</div>
+<input type='hidden' id='init_url' url-data="/uic/uicList" data-type="unused"/>
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/2.2.4/jquery.js"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/libs/weuijs/1.1.3/weui.min.js"></script>
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery-weui/1.2.0/js/jquery-weui.js"></script>
+<script type="text/javascript">
+    //初始化事件
+    $(function () {
+        unusedlist();
+    });
+
+    function getOsType() {
+        var u = navigator.userAgent;
+        if (u.indexOf('Android') > -1 || u.indexOf('Linux') > -1 || u.indexOf('Windows Phone') > -1) {
+            return 'Android';
+        } else if (u.indexOf('iPhone') > -1) {
+            return 'IOS';
+        } else {
+            return 'PC';
+        }
+    }
+
+    function reqUrl(reqUri, params, callbackName) {
+        reqUri = "/akaxin" + reqUri;
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.requestPost(reqUri, params, callbackName);
+        } else if (type == 'IOS') {
+            ios_requestPost(reqUri, params, callbackName);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    function reqHtml(reqUri, params) {
+        reqUri = "/akaxin" + reqUri;
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.requestPage(reqUri, params)
+        } else if (type == 'IOS') {
+            ios_requestPage(reqUri, params);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    function toast(msg) {
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.showToast(msg);
+        } else if (type == 'IOS') {
+            $.toast(msg);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    function refreshCurrentPage() {
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.refreshCurrentPage();
+        }
+    }
+
+    $(document).on("click", ".generate-code", function () {
+        var url = $(this).attr('url-data');
+        $.confirm({
+            title: '生成邀请码',
+            text: '确定在生成一批新的邀请码？',
+            onOK: function () {
+                reqUrl(url, "", "generateInviteCode");
+                $.closeModal();
+            },
+            onCancel: function () {
+                console.log('cancle');
+                toast('取消操作');
+                $.closeModal();
+            }
+        });
+    });
+
+    function generateInviteCode(result) {
+        if (result == 'success') {
+            $.toast("生成成功");
+            // refreshCurrentPage();
+            var params = {
+                "page": "1",
+                "code_status": "0"
+            };
+            reqUrl("/uic/uicList", JSON.stringify(params), "redisplay");
+        } else if (result == 'NO_PERMISSION') {
+            $.toast("没有权限,请稍后再试", "forbidden");
+        } else {
+
+            $.toast("生成失败", "forbidden");
+        }
+
+    }
+
+    var page = 0;
+    var loading = false;
+
+    function unusedlist() {
+        if (loading) {
+            $('.loadmore_site_invitecode').addClass('weui-loadmore_line');
+            $('.loadmore_site_invitecode span').html('暂无数据');
+            $('.loadmore_site_invitecode i').remove();
+            return
+        }
+        page = page + 1;
+        var reqUri = $('#init_url').attr('url-data');
+        var codeStatus = $('#init_url').attr('data-type');
+        if (codeStatus == "unused") {
+            codeStatus = 0;
+        } else {
+            codeStatus = 1;
+        }
+        var params = {
+            "page": page.toString(),
+            "code_status": codeStatus.toString()
+        };
+        reqUrl(reqUri, JSON.stringify(params), 'addInviteCodeToList');
+        loading = true;
+    }
+
+
+    $(document.body).infinite().on("infinite", function () {
+
+        unusedlist();
+    });
+
+    function addInviteCodeToList(results) {
+        var res = eval("(" + results + ")");
+        var data = res.uicData;
+        var html = '';
+        $.each(data, function (index, uic) {
+            var html = '<div class="weui-cell"> <div class="weui-cell__bd"> <p>' + uic.uic + '</p> </div> </div>';
+            $('#invitecode-lists').append(html);
+        });
+        loading = res.loading;
+        if (loading == true) {
+            $(".weui-loadmore__tips").html("到底啦");
+        } else {
+            $(".weui-loadmore__tips").html("加载更多");
+        }
+    }
+
+    function redisplay(results) {
+        $('#invitecode-lists').html("");
+        var res = eval("(" + results + ")");
+        var data = res.uicData;
+        var html = '';
+        $.each(data, function (index, uic) {
+            var html = '<div class="weui-cell"> <div class="weui-cell__bd"> <p>' + uic.uic + '</p> </div> </div>';
+            $('#invitecode-lists').append(html);
+        });
+        loading = res.loading;
+        if (loading == true) {
+            $(".weui-loadmore__tips").html("到底啦");
+        } else {
+            $(".weui-loadmore__tips").html("加载更多");
+        }
+    }
+</script>
+</body>
+
+</html>

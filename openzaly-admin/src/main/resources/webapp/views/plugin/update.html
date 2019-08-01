@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>编辑小程序</title>
+    </title>
+    <!-- 引入 WeUI -->
+    <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/1.1.2/weui.min.css"/>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.0/css/jquery-weui.css"/>
+    <style>
+        body, html {
+            height: 100%;
+            background-color: #f4f4f4;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .basic-title {
+            text-align: center;
+            font-weight: 400;
+            color: #1E88E5;
+            margin: 0 15%;
+        }
+
+        .basic-sub-title {
+            text-align: center;
+            color: #1E88E5;
+        }
+
+        .basic-header {
+            padding: 35px 0;
+        }
+
+        css
+        .basic-content-padded {
+            padding: 15px;
+        }
+
+        .margin_top_30px {
+            margin-top: 30px;
+        }
+
+        .basic-second-title {
+            text-align: center;
+            color: #1E88E5;
+            font-weight: 400;
+            margin: 0 15%;
+        }
+
+        .basic-weui-grid {
+            position: relative;
+            float: left;
+            padding: 5px;
+            width: 60px;
+            height: 60px;
+        }
+
+        .basic-color {
+            background-color: #1E88E5;
+            color: #FFFFFF;
+        }
+
+        .basic-weui-btn_primary {
+            background-color: #1E88E5;
+        }
+
+        .basic-weui-btn {
+            background-color: #1E88E5;
+            color: #FFFFFF;
+        }
+
+        .basic-weui-btn:hover {
+            background-color: #1E88E5;
+            color: #FFFFFF;
+        }
+
+        .basic-weui-btn:active {
+            background-color: #1E88E5 !important;
+            color: #FFFFFF;
+        }
+
+        .basic-weui-btn_mini {
+            display: inline-block;
+            padding: 0 1.32em;
+            line-height: 2.3;
+        }
+
+        .weui-dialog__btn {
+            color: #1E88E5;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        .basic-color_bg {
+            background-color: #f4f4f4;
+        }
+
+        .weui-loadmore_line .weui-loadmore__tips {
+            background-color: #f4f4f4;
+        }
+
+        footer a {
+            color: #999;
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+
+<body ontouchstart="">
+<div class="weui-cells weui-cells_form">
+    <div class="weui-cell">
+        <div class="weui-cell__hd">
+            <label class="weui-label">ID</label>
+        </div>
+        <div class="weui-cell__bd">
+            <input class="weui-input plugin_id" type="text" th:value="${plugin_id}" style="text-align: right;" disabled="disabled">
+        </div>
+    </div>
+    <div class="weui-cell">
+        <div class="weui-cell__hd">
+            <label class="weui-label">名称</label>
+        </div>
+        <div class="weui-cell__bd">
+            <input class="weui-input plugin_name" type="text" th:value="${name}" placeholder="显示给用户看的名字" style="text-align: right;">
+        </div>
+    </div>
+    <div class="weui-cell">
+        <div class="weui-cell__hd">
+            <label class="weui-label">ApiServer地址</label>
+        </div>
+        <div class="weui-cell__bd">
+            <input class="weui-input plugin_api_url" type="text" th:value="${api_url}" pattern="[a-z0-9]*"
+                   placeholder="纯网页小程序可以不填" style="text-align: right;">
+        </div>
+    </div>
+    <div class="weui-cell">
+        <div class="weui-cell__hd">
+            <label class="weui-label">落地页URL</label>
+        </div>
+        <div class="weui-cell__bd">
+            <input class="weui-input plugin_url_page" type="text" th:value="${url_page}" pattern="[a-z0-9]*"
+                   placeholder="纯网页小程序请填写页面完整URL" style="text-align: right;">
+        </div>
+    </div>
+    <div class="weui-cell">
+        <div class="weui-cell__bd">
+            <div class="weui-uploader">
+                <div class="weui-uploader__hd">
+                    <p class="weui-uploader__title">Logo</p>
+                    <div class="weui-uploader__info" th:if="${plugin_icon}!=null">1/1</div>
+                    <div class="weui-uploader__info" th:unless="${plugin_icon}!=null">0/1</div>
+                </div>
+                <div class="weui-uploader__bd">
+                    <ul class="weui-uploader__files" id="uploaderFiles">
+                        <li class="weui-uploader__file plugin_icon" id="plugin_info_icon"
+                            th:attr="plugin-icon=${plugin_icon}" th:if="${plugin_icon}!=null"></li>
+                    </ul>
+                    <div class="weui-uploader__input-box">
+                        <input id="uploaderInput" class="weui-uploader__input uploaderInput" type="file"
+                               accept="image/*" multiple="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="weui-cells__title weui-cell">
+        基本设置
+    </div>
+
+    <div class="weui-cells">
+        <div class="weui-cell">
+            <div class="weui-cell__hd">
+                <label class="weui-label">排序序号</label>
+            </div>
+            <div class="weui-cell__bd">
+                <input class="weui-input order" type="text" pattern="[0-9]*" th:value="${order}" style="text-align: right;">
+            </div>
+        </div>
+
+        <a class="weui-cell weui-cell_access position" href="javascript:;" th:attr="data=${position}">
+            <div class="weui-cell__bd">
+                <p>小程序位置</p>
+            </div>
+            <div class="weui-cell__ft position-txt" th:if="${position} == 0">首页小程序</div>
+            <div class="weui-cell__ft position-txt" th:unless="${position} == 0">消息帧小程序</div>
+        </a>
+        <a class="weui-cell weui-cell_access per_status" href="javascript:;" th:attr="data=${per_status}">
+            <div class="weui-cell__bd">
+                <p>小程序状态</p>
+            </div>
+            <div class="weui-cell__ft per_status-txt" th:if="${per_status} == 0">仅管理员可用</div>
+            <div class="weui-cell__ft per_status-txt" th:unless="${per_status} == 0">所有用户可用</div>
+        </a>
+        <a class="weui-cell weui-cell_access display_mode" href="javascript:;" th:attr="data=${display_mode}">
+            <div class="weui-cell__bd">
+                <p>展现方式</p>
+            </div>
+            <div class="weui-cell__ft display_mode-txt" th:if="${display_mode} == 0">新页面</div>
+            <div class="weui-cell__ft display_mode-txt" th:unless="${display_mode} == 0">浮屏</div>
+        </a>
+    </div>
+    <div th:if="${authKeyState} == 1">
+
+        <div class="weui-cells__title weui-cell" th:if="${authKeyState} == 1">
+            高级设置
+        </div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__hd">密钥(Authkey)</div>
+                <div class="weui-cell__bd">
+
+                    <!--<input class="weui-input subgenus_admin" type="text" th:value="${auth_key}" style="text-align: right;"-->
+                    <!--disabled>-->
+                    <div class="weui-cell__ft">
+                        <a href="javascript:;"
+                           class="weui-btn basic-weui-btn generate-authKey  weui-btn_mini  basic-color"
+                           url-data="/plugin/reSet" th:attr="plugin-id=${plugin_id}" style="text-align: left;">生成新的秘钥</a>
+                    </div>
+                </div>
+                <br>
+            </div>
+            <div class="weui-cell">
+                <button class="weui-input subgenus_admin authkey" th:text="${auth_key}"
+                        th:attr="data-clipboard-text=${auth_key}"></button>
+            </div>
+            <div class="weui-cell">
+	            <div class="weui-cell__hd">
+	                <label class="weui-label">允许访问的IP</label>
+	            </div>
+	            <div class="weui-cell__bd">
+	                <input class="weui-input allow_ip" type="text"
+	                       pattern="(25[0-5]|2[0-4]\d|[0-1]\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|[0-1]\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|[0-1]\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|[0-1]\d{2}|[1-9]?\d)"
+	                       th:value="${allow_ip}" style="text-align: right;">
+	            </div>
+	        </div>
+        </div>
+    </div>
+    <div class="weui-btn-area">
+        <a class="weui-btn basic-weui-btn weui-btn_primary basic-color update_plugin_info"
+           url-data="/plugin/editPlugin"
+           href="javascript:" id="addPluginButton" th:attr="plugin-id=${plugin_id}">确定</a>
+        <a class="weui-btn  weui-btn_warn delete-plugin" url-data="/plugin/delPlugin" href="javascript:"
+           id="addPluginButton" th:attr="plugin-id=${plugin_id}">删除小程序</a>
+    </div>
+
+
+    <input type='hidden' id='host_name'/>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/2.2.4/jquery.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/libs/weuijs/1.1.3/weui.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery-weui/1.2.0/js/jquery-weui.js"></script>
+    <script type='text/javascript'
+            src="https://cdn.staticfile.org/clipboard.js/1.5.15/clipboard.min.js"></script>
+    <script type="text/javascript">
+
+        var clipboard = new Clipboard('.authkey');
+        clipboard.on('success', function () {
+            $.toast('复制成功');
+        });
+        clipboard.on('error', function () {
+            $.toast('复制失败', 'forbidden');
+        });
+
+        function getOsType() {
+            var u = navigator.userAgent;
+            if (u.indexOf('Android') > -1 || u.indexOf('Linux') > -1) {
+                return 'Android';
+            } else if (u.indexOf('iPhone') > -1) {
+                return 'IOS';
+            } else {
+                return 'PC';
+            }
+        }
+
+        function reqUrl(reqUri, params, callbackName) {
+            reqUri = "/akaxin" + reqUri;
+            var type = getOsType();
+            if (type == 'Android') {
+                Android.requestPost(reqUri, params, callbackName);
+            } else if (type == 'IOS') {
+                ios_requestPost(reqUri, params, callbackName);
+            } else {
+                $.toast('暂时不支持该设备');
+            }
+        }
+
+        function reqHtml(reqUri, params) {
+            reqUri = "/akaxin" + reqUri;
+            var type = getOsType();
+            if (type == 'Android') {
+                Android.requestPage(reqUri, params)
+            } else if (type == 'IOS') {
+                ios_requestPage(reqUri, params);
+            } else {
+                $.toast('暂时不支持该设备');
+            }
+        }
+
+        function reqImageUpload(callback) {
+            var type = getOsType();
+            if (type == 'Android') {
+                Android.imageUpload(callback);
+            } else if (type == 'IOS') {
+                ios_imageUpload(callback);
+            } else {
+                $.toast('暂时不支持该设备');
+            }
+        }
+
+        function reqImageDownload(imageid, callback) {
+            var type = getOsType();
+            if (type == 'Android') {
+                Android.imageDownload(imageid, callback);
+            } else if (type == 'IOS') {
+                ios_imageDownload(imageid, callback);
+            } else {
+                $.toast('暂时不支持该设备');
+            }
+        }
+
+        function toast(msg) {
+            var type = getOsType();
+            if (type == 'Android') {
+                Android.showToast(msg);
+            } else if (type == 'IOS') {
+                $.toast(msg);
+            } else {
+                $.toast('暂时不支持该设备');
+            }
+        }
+
+        function isDomain(siteAddress) {
+            siteAddress=siteAddress.replace(/\s/g,"");
+            if (siteAddress.indexOf("://") > -1) {
+                hostname = siteAddress.split('/')[2];
+            } else {
+                hostname = siteAddress.split('/')[0];
+            }
+            var domain = hostname.split(':')[0];
+            domain = domain.split('?')[0];
+
+            if (domain) {
+                if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(domain)) {
+                    return true;
+                }
+
+                var re2 = /^(?=^.{3,255}$)[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$/;
+                if (re2.test(domain)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        $(document).on("click", ".delete-plugin", function () {
+            var pluginId = $(this).attr('plugin-id');
+            var reqUri = $(this).attr('url-data');
+            $('#del_plugin').attr('plugin-id', pluginId);
+            $.confirm({
+                title: '删除',
+                text: '删除后，将不能使用！',
+                onOK: function () {
+                    var params = {
+                        'plugin_id': pluginId,
+                    };
+                    reqUrl(reqUri, JSON.stringify(params), "delPlugin");
+                    $.closeModal();
+                },
+                onCancel: function () {
+                    console.log('cancle');
+                    toast('取消操作');
+                    $.closeModal();
+                }
+            });
+        });
+
+        function delPlugin(result) {
+            if (result == 'success') {
+                $('.update_plugin_info').removeClass('weui-btn_primary');
+                $('.update_plugin_info').removeClass('basic-color');
+                $('.update_plugin_info').removeClass('basic-weui-btn');
+                $('.update_plugin_info').addClass('weui-btn_disabled');
+                $('.update_plugin_info').addClass('weui-btn_default');
+                $('.update_plugin_info').prop('disabled', true);
+                $('.delete-plugin').addClass('weui-btn_disabled');
+                $('.delete-plugin').prop('disabled', true);
+                $.toast('删除成功');
+            } else {
+                $.toast('删除失败', 'forbidden');
+            }
+        }
+
+        $(document).on('click', ".update_plugin_info", function () {
+            var pluginId = $(this).attr('plugin-id');
+            var reqUri = $(this).attr('url-data');
+            var apiUrl = $('.plugin_api_url').val();
+            var urlPage = $('.plugin_url_page').val();
+            var name = $('.plugin_name').val();
+            var pluginIcon = $('.plugin_icon').attr('plugin-icon');
+            var perStatus = $(".per_status").attr("data");
+            var position = $(".position").attr("data");
+            var order = $(".order").val();
+            var allowIp = $(".allow_ip").val();
+            var displayMode = $(".display_mode").attr("data");
+            
+            if (!name || name.length < 1) {
+                $.toptip('名称不能为空', 'error');
+                return false;
+            }
+
+
+            if (!position || position.length < 1) {
+                $.toptip('请选择小程序位置', 'error');
+                return false;
+            }
+
+            if (!perStatus || perStatus.length < 1) {
+                $.toptip('请选择状态', 'error');
+                return false;
+            }
+
+            $.confirm({
+                title: '修改',
+                text: '修改后，将会更新原有信息！',
+                onOK: function () {
+                    var params = {
+                        'plugin_id': pluginId,
+                        'url_page': urlPage,
+                        'api_url': apiUrl,
+                        'per_status': perStatus,
+                        'position': position,
+                        'plugin_icon': pluginIcon,
+                        'name': name,
+                        'order': order,
+                        'allow_ip': allowIp,
+                        'display_mode':displayMode
+                    };
+                    reqUrl(reqUri, JSON.stringify(params), "updatePlugin");
+
+                    $('.update_plugin_info').removeClass('weui-btn_primary');
+                    $('.update_plugin_info').removeClass('basic-color');
+                    $('.update_plugin_info').removeClass('basic-weui-btn');
+                    $('.update_plugin_info').addClass('weui-btn_disabled');
+                    $('.update_plugin_info').addClass('weui-btn_default');
+                    $('.update_plugin_info').prop('disabled', true);
+                    $.closeModal();
+                },
+                onCancel: function () {
+                    console.log('cancle');
+                    toast('取消操作');
+                    $.closeModal();
+                }
+            });
+        });
+
+        function updatePlugin(result) {
+            $('.update_plugin_info').addClass('weui-btn_primary');
+            $('.update_plugin_info').addClass('basic-color');
+            $('.update_plugin_info').addClass('basic-weui-btn');
+            $('.update_plugin_info').removeClass('weui-btn_disabled');
+            $('.update_plugin_info').removeClass('weui-btn_default');
+            $('.update_plugin_info').prop('disabled', false);
+            if (result == 'success') {
+                $.toast('修改成功');
+            } else {
+                $.toast('修改失败', 'forbidden');
+            }
+        }
+
+        $(document).on("click", '.uploaderInput', function () {
+            reqImageUpload("imageUpload");
+        });
+
+        function imageUpload(result, imageId, imageLocalPath) {
+            var type = getOsType();
+            if (result == 1) {
+                if (type == 'Android') {
+                    var img = '<li class="weui-uploader__file plugin_icon" plugin-icon="' + imageId + '"><img src="http://akaxin/img' + imageLocalPath + '" style="height:75px; width:75px;" /></li>';
+                } else {
+                    var img = '<li class="weui-uploader__file plugin_icon" plugin-icon="' + imageId + '"><img src="' + imageLocalPath + '" style="height:75px; width:75px;" /></li>';
+                }
+                $('#uploaderFiles').html(img);
+                $('.weui-uploader__info').html('1/1');
+            } else {
+                $.toast('图片上传失败', 'forbidden');
+            }
+        }
+
+        $('.plugin_icon').ready(function () {
+            var pluginIcon = $('.plugin_icon').attr('plugin-icon');
+            reqImageDownload(pluginIcon, "jsimageDownload");
+        });
+
+        function jsimageDownload(result, imageid, imageLocalPath) {
+            var type = getOsType();
+            if (type == 'Android') {
+                var html = '<img src="http://akaxin/img' + imageLocalPath + '" style="height:75px; width:75px;" />';
+            } else {
+                var html = '<img src="' + imageLocalPath + '" style="height:75px; width:75px;" />';
+            }
+            $('.plugin_icon').html(html);
+        }
+
+        $(document).on("click", '.position', function () {
+            $.actions({
+                title: "",
+                onClose: function () {
+                    console.log("close");
+                },
+                actions: [{
+                    text: "首页位置",
+                    className: "color-primary weui-dialog__btn ",
+                    onClick: function () {
+                        $(".position-txt").html("首页位置");
+                        $(".position").attr("data", "0");
+                    }
+                },
+                    {
+                        text: "聊天界面",
+                        className: "color-warning weui-dialog__btn",
+                        onClick: function () {
+                            $(".position-txt").html("聊天界面");
+                            $(".position").attr("data", "1");
+                        }
+                    }
+                ]
+            });
+        });
+        $(document).on("click", ".generate-authKey", function () {
+            var pluginId = $(this).attr('plugin-id');
+            var reqUri = $(this).attr('url-data');
+            $.confirm({
+                title: '重置AuthKey',
+                text: '确定在重置AuthKey?',
+                onOK: function () {
+                    var params = {
+                        'plugin_id': pluginId,
+                    };
+                    reqUrl(reqUri, JSON.stringify(params), "generateAuthKey");
+                    $.closeModal();
+                },
+                onCancel: function () {
+                    console.log('cancle');
+                    toast('取消操作');
+                    $.closeModal();
+                }
+            });
+        });
+
+        function generateAuthKey(result) {
+            if (result == 'false') {
+                $.toast("重置失败", "forbidden");
+            } else {
+                $.toast("重置成功");
+                $('.authkey').html(result);
+                $('.authkey').attr('data-clipboard-text', result);
+            }
+
+        }
+
+        $(document).on("click", '.per_status', function () {
+            $.actions({
+                title: "",
+                onClose: function () {
+                    console.log("close");
+                },
+                actions: [{
+                    text: "仅管理员可用",
+                    className: "color-primary weui-dialog__btn ",
+                    onClick: function () {
+                        $(".per_status-txt").html("仅管理员可用");
+                        $(".per_status").attr("data", "0");
+                    }
+                },
+                    {
+                        text: "所有用户可用",
+                        className: "color-warning weui-dialog__btn",
+                        onClick: function () {
+                            $(".per_status-txt").html("所有用户可用");
+                            $(".per_status").attr("data", "1");
+                        }
+                    }
+                ]
+            });
+        });
+        
+       $(document).on("click", '.display_mode', function () {
+        $.actions({
+            title: "",
+            onClose: function () {
+                console.log("close");
+            },
+            actions: [{
+                text: "新页面展示",
+                className: "color-primary weui-dialog__btn ",
+                onClick: function () {
+                    $(".display_mode-txt").html("新页面展示");
+                    $(".display_mode").attr("data", "0");
+                }
+            },
+                {
+                    text: "浮屏(聊天界面专用)",
+                    className: "color-warning weui-dialog__btn",
+                    onClick: function () {
+                        $(".display_mode-txt").html("浮屏(聊天界面专用)");
+                        $(".display_mode").attr("data", "1");
+                    }
+                }
+            ]
+        });
+        
+    });
+    </script>
+</div>
+</body>
+
+</html>

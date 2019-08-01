@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>群成员管理</title>
+    <!-- 引入 WeUI -->
+    <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/1.1.2/weui.min.css"/>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jquery-weui/1.2.0/css/jquery-weui.css"/>
+    <style type="text/css">
+        body, html {
+            height: 100%;
+            background-color: #f4f4f4;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        .weui-loadmore_line .weui-loadmore__tips {
+            background-color: #f4f4f4;
+        }
+
+        footer a {
+            color: #999;
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+
+<body ontouchstart="">
+<div class="weui-cells__title weui-cell" style="margin: auto;">
+    <div class="weui-cell__bd">
+        <p>群成员列表</p>
+    </div>
+    <div class="weui-cell__ft">
+        <a class="weui-btn weui-btn_mini weui-btn_warn  remove-group-user"
+           th:attr="group-id=${siteGroupId}"
+           url-data="/group/removeGroupMember" href="javascript:">移除用户</a>
+    </div>
+</div>
+<div class="weui-cells group-member-lists weui-cells_checkbox" id='group-member-lists'>
+</div>
+
+<div class="weui-loadmore weui-loadmore_line loadmore_group_member">
+    <span class="weui-loadmore__tips"></span>
+</div>
+
+<input type="hidden" id="remove_group_user" site-user-id="">
+<input type="hidden" id="init_url" th:attr="group-id=${siteGroupId}" url-data="/group/groupMember">
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/2.2.4/jquery.js"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/libs/weuijs/1.1.3/weui.min.js"></script>
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery-weui/1.2.0/js/jquery-weui.js"></script>
+<!-- <script type="text/javascript" src="<?php echo $host_name;?>/public/js/manage-group-admin.js<?php echo $static_version?>"> </script> -->
+<script type="text/javascript">
+    $(function () {
+        memberList();
+    });
+
+
+    function getOsType() {
+        var u = navigator.userAgent;
+        if (u.indexOf('Android') > -1 || u.indexOf('Linux') > -1) {
+            return 'Android';
+        } else if (u.indexOf('iPhone') > -1) {
+            return 'IOS';
+        } else {
+            return 'PC';
+        }
+    }
+
+    function reqUrl(reqUri, params, callbackName) {
+        reqUri = "/akaxin" + reqUri;
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.requestPost(reqUri, params, callbackName);
+        } else if (type == 'IOS') {
+            ios_requestPost(reqUri, params, callbackName);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    function reqHtml(reqUri, params) {
+        reqUri = "/akaxin" + reqUri;
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.requestPage(reqUri, params)
+        } else if (type == 'IOS') {
+            ios_requestPage(reqUri, params);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    function reqImageUpload(callback) {
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.imageUpload(callback);
+        } else if (type == 'IOS') {
+            ios_imageUpload(callback);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    function reqImageDownload(imageid, callback) {
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.imageDownload(imageid, callback);
+        } else if (type == 'IOS') {
+            ios_imageDownload(imageid, callback);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    function toast(msg) {
+        var type = getOsType();
+        if (type == 'Android') {
+            Android.showToast(msg);
+        } else if (type == 'IOS') {
+            $.toast(msg);
+        } else {
+            $.toast('暂时不支持该设备');
+        }
+    }
+
+    $(document).on("click", ".remove-group-user", function () {
+        var groupId = $(this).attr('group-id');
+        var reqUri = $(this).attr('url-data');
+        var removeSiteUserIds = [];
+        $('input[name=remove_user]').each(function () {
+            var checkedFlag = $(this).prop('checked');
+            var siteUserId = $(this).attr('id');
+            if (checkedFlag) {
+                removeSiteUserIds.push(siteUserId);
+            }
+        });
+
+        if (removeSiteUserIds.length < 1) {
+            $.toptip('移除成员不能为空', 'error');
+            return false;
+        }
+
+        $('#remove_group_user').attr('site-user-id', JSON.stringify(removeSiteUserIds));
+        var params = {
+            "siteGroupId": groupId,
+            "groupMembers": removeSiteUserIds,
+        };
+        $.confirm({
+            title: '移除群成员',
+            text: '确定移除群成员？',
+            onOK: function () {
+                reqUrl(reqUri, JSON.stringify(params), "removeGroupUser");
+                $.closeModal();
+            },
+            onCancel: function () {
+                console.log('cancle');
+                toast('取消操作');
+                $.closeModal();
+            }
+        });
+    });
+
+    function removeGroupUser(result) {
+        if (result == 'success') {
+            var siteUserIds = $('#remove_group_user').attr('site-user-id');
+            siteUserIds = JSON.parse(siteUserIds);
+            $.each(siteUserIds, function (index, siteUserId) {
+                console.log(index);
+                $("[for=" + siteUserId + "]").remove();
+            });
+            $.toast('操作成功');
+        } else {
+            $.toast('操作失败', "forbidden");
+        }
+    }
+
+    function disbandGroup(result) {
+        if (result == 'success') {
+            $.toast("解散群成功");
+        } else {
+            $.toast("解散群失败", "forbidden");
+        }
+    }
+
+    var page = 0;
+    var loading = false;
+    $(document.body).infinite().on("infinite", function () {
+        memberList();
+    });
+
+    function memberList() {
+        if (loading) {
+            $('.loadmore_group_member').addClass('weui-loadmore_line');
+            $('.loadmore_group_member span').html('暂无数据');
+            $('.loadmore_group_member i').remove();
+            return false;
+        }
+        page = page + 1;
+        var groupId = $('#init_url').attr('group-id');
+        var reqUri = $('#init_url').attr('url-data');
+        var params = {
+            "page": page.toString(),
+            "group_id": groupId
+        };
+        reqUrl(reqUri, JSON.stringify(params), 'addMemberToList');
+        loading = true;
+    }
+
+    function addMemberToList(results) {
+        results = eval("(" + results + ")");
+        var data = results.groupMemberData;
+        var html = '';
+        $.each(data, function (index, groupMember) {
+            var html = '<label class="weui-cell weui-check__label" for="' + groupMember.siteUserId + '"> <div class="weui-cell__hd"> <input type="checkbox" class="weui-check" name="remove_user" id="' + groupMember.siteUserId + '" > <i class="weui-icon-checked"></i> </div> <div name="user_image" class="weui-cell__hd user_image ' + groupMember.userPhoto + '" user-image="' + groupMember.userPhoto + '"></div> <div class="weui-cell__bd"> <p>' + groupMember.userName + '</p> </div> </label>';
+            console.log(html);
+            $('#group-member-lists').append(html);
+        });
+        loading = results.loading;
+        if (loading == true) {
+            $(".weui-loadmore__tips").html("到底啦");
+        } else {
+            $(".weui-loadmore__tips").html("加载更多");
+        }
+    }
+</script>
+</body>
+
+</html>
